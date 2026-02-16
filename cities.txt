@@ -1,0 +1,15 @@
+moskva
+sankt-peterburg
+nizhniy_novgorod
+novosibirsk
+kazan
+krasnodar
+ekaterinburg
+ufa
+perm
+omsk
+chelyabinsk
+voronezh
+samara
+rostov-na-donu
+volgograd

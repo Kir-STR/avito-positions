@@ -1,0 +1,11 @@
+{
+  "headless": true,
+  "min_delay": 3,
+  "max_delay": 12,
+  "long_pause_every": 25,
+  "long_pause_min": 15,
+  "long_pause_max": 30,
+  "page_timeout": 30000,
+  "selector_timeout": 10000,
+  "max_retries": 2
+}
