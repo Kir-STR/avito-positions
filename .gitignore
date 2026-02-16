@@ -3,3 +3,4 @@ logs/
 output/
 .claude/
 .playwright-mcp/
+CLAUDE.md
