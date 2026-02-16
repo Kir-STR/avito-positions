@@ -2,11 +2,14 @@
 
 Мониторинг позиций объявлений в поисковой выдаче Авито по городам.
 
-## Установка
+## Требования
+
+1. [Python 3.10+](https://www.python.org/downloads/)
+2. Установить зависимости:
 
 ```bash
-pip install playwright
-playwright install chromium
+python -m pip install playwright
+python -m playwright install chromium
 ```
 
 ## Запуск
