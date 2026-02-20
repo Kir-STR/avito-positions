@@ -11,6 +11,7 @@ import signal
 import sys
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import urlparse, parse_qs, urlencode, unquote
 
 from playwright.async_api import async_playwright
 
@@ -54,11 +55,20 @@ def load_config(path: Path | None = None) -> dict:
     return cfg
 
 
-def parse_category_path(url: str) -> str:
-    """Extract category_path from Avito URL by stripping https://www.avito.ru/all/ prefix."""
+def parse_category_path(url: str) -> tuple[str, str | None]:
+    """Extract category_path and optional q= query from Avito URL.
+
+    Returns (category_path, "q=<value>") for search URLs,
+            (category_path, None) for plain category URLs.
+    """
+    parsed = urlparse(url)
     for prefix in ("https://www.avito.ru/all/", "http://www.avito.ru/all/"):
         if url.startswith(prefix):
-            return url[len(prefix):].split("?")[0]
+            path = parsed.path[len("/all/"):]
+            qs = parse_qs(parsed.query)
+            if "q" in qs:
+                return (path, urlencode({"q": qs["q"][0]}))
+            return (path, None)
     raise ValueError(f"URL must start with https://www.avito.ru/all/  — got: {url}")
 
 
@@ -314,7 +324,8 @@ async def looks_like_captcha(page) -> bool:
 # Main loop
 # ---------------------------------------------------------------------------
 async def run(cfg: dict, category_path: str, cities: list[str],
-              keywords: list[list[str]], skip: int = 0):
+              keywords: list[list[str]], skip: int = 0,
+              query: str | None = None):
     global collected_results, shutdown_requested
 
     run_ts = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -326,7 +337,9 @@ async def run(cfg: dict, category_path: str, cities: list[str],
         logger.error("No cities to process. Check cities.txt")
         return
 
-    logger.info("Starting scan: %d cities, category: %s", len(cities), category_path)
+    logger.info("Starting scan: %d cities, category: %s%s",
+                len(cities), category_path,
+                f", query: {unquote(query)}" if query else "")
 
     consecutive_errors = 0
 
@@ -341,7 +354,7 @@ async def run(cfg: dict, category_path: str, cities: list[str],
                     logger.info("Shutdown requested, stopping after %d cities", i - 1)
                     break
 
-                url = f"https://www.avito.ru/{city}/{category_path}"
+                url = f"https://www.avito.ru/{city}/{category_path}" + (f"?{query}" if query else "")
                 logger.info("[%d/%d] %s", i, len(cities), city)
 
                 success = False
@@ -456,11 +469,13 @@ def main():
     setup_logging()
     signal.signal(signal.SIGINT, handle_signal)
 
-    category_path = parse_category_path(args.url)
+    category_path, query = parse_category_path(args.url)
     cities = load_cities(Path(args.cities) if args.cities else None)
     keywords = load_keywords(Path(args.keywords) if args.keywords else None)
 
     logger.info("Category: %s", category_path)
+    if query:
+        logger.info("Search query: %s", unquote(query))
     logger.info("Cities: %d from %s", len(cities), args.cities or "cities.txt")
     logger.info("Keywords: %d groups from %s", len(keywords), args.keywords or "keywords.txt")
 
@@ -468,7 +483,7 @@ def main():
     if args.debug:
         cfg["headless"] = False
 
-    asyncio.run(run(cfg, category_path, cities, keywords, skip=args.skip))
+    asyncio.run(run(cfg, category_path, cities, keywords, skip=args.skip, query=query))
 
 
 if __name__ == "__main__":
