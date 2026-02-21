@@ -18,27 +18,38 @@ python -m playwright install chromium
 python main.py URL
 ```
 
-`URL` — обязательный аргумент, ссылка на категорию Авито вида:
+`URL` — обязательный аргумент. Поддерживаются два вида ссылок:
 
+**По категории** — переход в конкретную категорию:
 ```
-https://www.avito.ru/all/predlozheniya_uslug/delovye_uslugi/IT_dizayn_teksty/cozdanie_sajtov_i_prilozhenij-ASgBAgICA0SYC7KfAZ4L2LqYA~rvFuK6mAM
+https://www.avito.ru/all/predlozheniya_uslug/delovye_uslugi/.../razrabotka_chat_botov-ASgBAgIC...
 ```
 
-Скрипт вырезает из URL часть после `avito.ru/all/` и подставляет вместо `all` каждый город из списка.
+**По поисковому запросу** — поиск по тексту внутри категории:
+```
+https://www.avito.ru/all/predlozheniya_uslug?q=%D0%B8%D0%B8
+```
+
+Скрипт вырезает из URL часть после `avito.ru/all/` и подставляет вместо `all` каждый город из списка. Для поисковых ссылок параметр `?q=...` сохраняется.
 
 ### Примеры
 
 ```bash
-python main.py https://www.avito.ru/all/... --debug       # видимый браузер
-python main.py https://www.avito.ru/all/... --skip 80     # пропустить первые 80 городов
-python main.py https://www.avito.ru/all/... --cities my_cities.txt --keywords my_kw.txt
+# по категории
+python main.py "https://www.avito.ru/all/predlozheniya_uslug/delovye_uslugi/..." --debug
+
+# по поисковому запросу
+python main.py "https://www.avito.ru/all/predlozheniya_uslug?q=%D0%B8%D0%B8"
+
+# с опциями
+python main.py "https://www.avito.ru/all/..." --skip 80 --cities my_cities.txt --keywords my_kw.txt
 ```
 
 ### Все опции
 
 | Опция | Описание |
 |---|---|
-| `URL` | Ссылка на категорию (обязательно) |
+| `URL` | Ссылка на категорию или поисковый запрос (обязательно) |
 | `--skip N` | Пропустить первые N городов |
 | `--cities FILE` | Путь к файлу городов (по умолчанию `cities.txt`) |
 | `--keywords FILE` | Путь к файлу ключевых слов (по умолчанию `keywords.txt`) |
