@@ -1,6 +1,7 @@
 docs/
 logs/
 output/
+__pycache__/
 .claude/
 .playwright-mcp/
 CLAUDE.md
